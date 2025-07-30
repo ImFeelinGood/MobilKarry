@@ -17525,6 +17525,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 458ad88b190d6ef46aca021dc6de572f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxPassengers: 8
+  currentPassengers: []
   dropOffMarkerPrefab: {fileID: 0}
 --- !u!114 &2027378056
 MonoBehaviour:
@@ -17965,13 +17967,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2070975155}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.13052624, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 1.83, z: 62.27}
+  m_LocalRotation: {x: 0.9914449, y: 0, z: 0, w: 0.13052626}
+  m_LocalPosition: {x: 0, y: 1.77, z: 62.29}
   m_LocalScale: {x: 3.48, y: 0.25, z: -15}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -15, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 165, y: 0, z: 0}
 --- !u!1 &2074356849
 GameObject:
   m_ObjectHideFlags: 0

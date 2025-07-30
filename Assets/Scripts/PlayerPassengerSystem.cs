@@ -1,42 +1,62 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerPassengerSystem : MonoBehaviour
 {
-    private PassengerPickup currentPassenger;
+    public int maxPassengers = 8;
 
+    [SerializeField] private List<PassengerData> currentPassengers = new List<PassengerData>();
     public GameObject dropOffMarkerPrefab;
-    private GameObject activeMarker;
 
-    public void PickUpPassenger(PassengerPickup passenger)
+    [System.Serializable]
+    public class PassengerData
     {
-        currentPassenger = passenger;
+        public Transform waypoint;
+        public int reward;
+        public GameObject marker;
+    }
 
-        // Spawn drop-off marker
-        if (dropOffMarkerPrefab && passenger.dropOffWaypoint != null)
+    public void PickUpPassenger(PassengerPickup passengerPickup)
+    {
+        if (currentPassengers.Count >= maxPassengers) return;
+
+        PassengerData data = new PassengerData
         {
-            activeMarker = Instantiate(dropOffMarkerPrefab, passenger.dropOffWaypoint.position, Quaternion.identity);
-        }
+            waypoint = passengerPickup.GetWaypoint(),
+            reward = passengerPickup.GetReward(),
+            marker = Instantiate(dropOffMarkerPrefab, passengerPickup.GetWaypoint().position, Quaternion.identity)
+        };
 
-        Debug.Log("Passenger picked up!");
+        currentPassengers.Add(data);
     }
 
     public void DropOffPassenger()
     {
-        if (currentPassenger == null) return;
+        if (currentPassengers.Count == 0) return;
 
-        // Give reward
-        CurrencyManager.Instance.AddRupiah(currentPassenger.rewardAmount);
-        Debug.Log("Passenger dropped off! Reward: Rp" + currentPassenger.rewardAmount);
+        Vector3 pos = transform.position;
+        PassengerData drop = null;
 
-        // Remove marker
-        if (activeMarker)
-            Destroy(activeMarker);
+        foreach (var p in currentPassengers)
+        {
+            if (Vector3.Distance(pos, p.waypoint.position) < 10f)
+            {
+                drop = p;
+                break;
+            }
+        }
 
-        currentPassenger = null;
+        if (drop != null)
+        {
+            CurrencyManager.Instance.AddRupiah(drop.reward);
+            Debug.Log("Dropped off passenger, Reward: " + drop.reward);
+
+            if (drop.marker) Destroy(drop.marker);
+            currentPassengers.Remove(drop);
+        }
     }
 
-    public bool HasPassenger()
-    {
-        return currentPassenger != null;
-    }
+    public bool HasPassenger() => currentPassengers.Count > 0;
+
+    public bool CanPickUpPassenger() => currentPassengers.Count < maxPassengers;
 }

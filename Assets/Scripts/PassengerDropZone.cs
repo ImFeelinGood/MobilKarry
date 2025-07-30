@@ -33,7 +33,6 @@ public class PassengerDropZone : MonoBehaviour
             if (carController.currentSpeed <= dropStopSpeed)
             {
                 passengerSystem.DropOffPassenger();
-                // TODO: UIManager.Instance.HideDropoffWarning();
             }
         }
     }
