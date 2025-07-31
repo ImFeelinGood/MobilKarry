@@ -13,6 +13,7 @@ public class PassengerDropZone : MonoBehaviour
 
         if (passengerSystem != null && carController != null && passengerSystem.HasPassenger())
         {
+            // Change carController.currentSpeed to carController.stationary = false
             if (carController.currentSpeed > dropStopSpeed)
             {
                 Debug.Log("Too fast to drop off passenger!");
@@ -30,6 +31,7 @@ public class PassengerDropZone : MonoBehaviour
 
         if (passengerSystem != null && carController != null && passengerSystem.HasPassenger())
         {
+            // Change carController.currentSpeed to carController.stationary = true
             if (carController.currentSpeed <= dropStopSpeed)
             {
                 passengerSystem.DropOffPassenger();
