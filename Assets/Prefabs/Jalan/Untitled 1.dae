@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 4.5.1 LTS commit date:2025-07-29, commit time:05:31, hash:b0a72b245dcf</authoring_tool>
+    </contributor>
+    <created>2025-08-01T14:54:42</created>
+    <modified>2025-08-01T14:54:42</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Road-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.64 0.64 0.64 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="Road-material" name="Road">
+      <instance_effect url="#Road-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Road_Straight_2_mesh-mesh" name="Road Straight 2_mesh">
+      <mesh>
+        <source id="Road_Straight_2_mesh-mesh-positions">
+          <float_array id="Road_Straight_2_mesh-mesh-positions-array" count="84">-7.5 -5 -5.25 -7.5 -5 4.75 -5 -7.95729e-7 -5.25 -5.1 0.2499991 -5.25 -5 0.1499991 -5.25 -5 0.1499996 4.75 -5.1 0.2499996 4.75 -7.5 0.1499996 4.75 -7.5 0.1499991 -5.25 -7.4 0.2499991 -5.25 -7.4 0.2499996 4.75 7.5 -5 -5.25 5 -3.58615e-7 4.75 7.5 -5 4.75 5 -7.95729e-7 -5.25 5.1 0.2499996 4.75 5 0.1499991 -5.25 5.1 0.2499991 -5.25 5 0.1499996 4.75 7.5 0.1499996 4.75 7.400001 0.2499991 -5.25 7.5 0.1499991 -5.25 7.400001 0.2499996 4.75 -5 -3.58615e-7 4.75 -0.0999999 -7.95729e-7 -5.25 0.0999999 -7.95729e-7 -5.25 0.0999999 -5.77172e-7 -0.25 -0.0999999 -5.77172e-7 -0.25</float_array>
+          <technique_common>
+            <accessor source="#Road_Straight_2_mesh-mesh-positions-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Road_Straight_2_mesh-mesh-normals">
+          <float_array id="Road_Straight_2_mesh-mesh-normals-array" count="54">0 1 0 0.7071068 0.7071068 0 0 1 0 0 1 0 -1 0 0 1 0 0 -0.7071042 0.7071095 0 -0.7071068 0.7071068 0 0 1 0 0 1 0 0 1 0 0 1 0 0.7071068 0.7071068 0 0 1 0 0 1 0 -0.7071068 0.7071068 0 0 1 0 0.7071123 0.7071014 0</float_array>
+          <technique_common>
+            <accessor source="#Road_Straight_2_mesh-mesh-normals-array" count="18" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Road_Straight_2_mesh-mesh-map-0">
+          <float_array id="Road_Straight_2_mesh-mesh-map-0-array" count="168">0.3945866 0.8690434 0.3945866 0.8690434 0.3945866 0.8690434 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.8875491 0.8876457 0.8875491 0.8876457 0.8875491 0.8876457 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453 0.3945866 0.8690434 0.3945866 0.8690434 0.3945866 0.8690434 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453 0.3945866 0.8690434 0.3945866 0.8690434 0.3945866 0.8690434 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.8875491 0.8876457 0.8875491 0.8876457 0.8875491 0.8876457 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453 0.3945866 0.8690434 0.3945866 0.8690434 0.3945866 0.8690434 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.6240157 0.8628426 0.1341537 0.8845453 0.1341537 0.8845453 0.1341537 0.8845453</float_array>
+          <technique_common>
+            <accessor source="#Road_Straight_2_mesh-mesh-map-0-array" count="84" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Road_Straight_2_mesh-mesh-vertices">
+          <input semantic="POSITION" source="#Road_Straight_2_mesh-mesh-positions"/>
+        </vertices>
+        <triangles material="Road-material" count="28">
+          <input semantic="VERTEX" source="#Road_Straight_2_mesh-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Road_Straight_2_mesh-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Road_Straight_2_mesh-mesh-map-0" offset="2" set="0"/>
+          <p>6 0 0 9 0 1 10 0 2 4 1 3 6 1 4 5 1 5 25 2 6 27 2 7 26 2 8 26 3 9 23 3 10 12 3 11 1 4 12 8 4 13 0 4 14 2 5 15 5 5 16 23 5 17 17 6 18 18 6 19 15 6 20 7 7 21 9 7 22 8 7 23 26 8 24 14 8 25 25 8 26 17 9 27 22 9 28 20 9 29 21 1 30 22 1 31 19 1 32 12 4 33 16 4 34 14 4 35 21 5 36 13 5 37 11 5 38 27 10 39 2 10 40 23 10 41 6 11 42 3 11 43 9 11 44 4 12 45 3 12 46 6 12 47 25 13 48 24 13 49 27 13 50 26 14 51 27 14 52 23 14 53 1 4 54 7 4 55 8 4 56 2 5 57 4 5 58 5 5 59 17 15 60 16 15 61 18 15 62 7 15 63 10 15 64 9 15 65 26 16 66 12 16 67 14 16 68 17 0 69 15 0 70 22 0 71 21 17 72 20 17 73 22 17 74 12 4 75 18 4 76 16 4 77 21 5 78 19 5 79 13 5 80 27 8 81 24 8 82 2 8 83</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Road_Straight_2_mesh" name="Road_Straight_2_mesh" type="NODE">
+        <matrix sid="transform">0.5 0 0 0 0 3.7749e-8 -0.5 0 0 0.5 3.7749e-8 0 0 0 0 1</matrix>
+        <instance_geometry url="#Road_Straight_2_mesh-mesh" name="Road_Straight_2_mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Road-material" target="#Road-material">
+                <bind_vertex_input semantic="Road_Straight_2_mesh-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

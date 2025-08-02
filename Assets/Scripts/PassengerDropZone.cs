@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class PassengerDropZone : MonoBehaviour
 {
-    public float dropStopSpeed = 5f; // km/h
-
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
@@ -13,10 +11,9 @@ public class PassengerDropZone : MonoBehaviour
 
         if (passengerSystem != null && carController != null && passengerSystem.HasPassenger())
         {
-            // Change carController.currentSpeed to carController.stationary = false
-            if (carController.currentSpeed > dropStopSpeed)
+            if (carController.stationary == false)
             {
-                Debug.Log("Too fast to drop off passenger!");
+                Debug.Log("Stop to drop off passenger!");
                 // TODO: UIManager.Instance.ShowDropoffWarning();
             }
         }
@@ -31,19 +28,10 @@ public class PassengerDropZone : MonoBehaviour
 
         if (passengerSystem != null && carController != null && passengerSystem.HasPassenger())
         {
-            // Change carController.currentSpeed to carController.stationary = true
-            if (carController.currentSpeed <= dropStopSpeed)
+            if (carController.stationary == true)
             {
                 passengerSystem.DropOffPassenger();
             }
         }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
-
-        // TODO: UIManager.Instance.HideDropoffWarning();
-        Debug.Log("Left drop-off zone");
     }
 }

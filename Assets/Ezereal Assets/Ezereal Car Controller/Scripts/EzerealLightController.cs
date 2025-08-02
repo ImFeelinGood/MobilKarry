@@ -156,18 +156,35 @@ namespace Ezereal
         }
         void SetLight(GameObject[] lights, bool isActive)
         {
-            if (isActive)
+            foreach (var lightObj in lights)
             {
-                foreach (var light in lights)
+                if (lightObj == null) continue;
+
+                Light lightComp = lightObj.GetComponent<Light>();
+                if (lightComp != null && lightComp.type == LightType.Spot)
                 {
-                    light.SetActive(true);
+                    lightObj.SetActive(isActive);
+                    continue;
                 }
-            }
-            else
-            {
-                foreach (var light in lights)
+
+                if (lightComp != null)
                 {
-                    light.SetActive(false);
+                    lightComp.enabled = isActive;
+                }
+
+                Renderer rend = lightObj.GetComponent<Renderer>();
+                if (rend != null && rend.material != null && rend.material.HasProperty("_EmissionColor"))
+                {
+                    if (isActive)
+                    {
+                        rend.material.EnableKeyword("_EMISSION");
+                        Color emissionColor = rend.material.GetColor("_EmissionColor");
+                        rend.material.SetColor("_EmissionColor", emissionColor); // just reapply it
+                    }
+                    else
+                    {
+                        rend.material.DisableKeyword("_EMISSION");
+                    }
                 }
             }
         }

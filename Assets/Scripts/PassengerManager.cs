@@ -14,7 +14,6 @@ public class PassengerManager : MonoBehaviour
 
     void SpawnPassengers()
     {
-        // Shuffle pickup spawn points
         ShuffleArray(pickupSpawnPoints);
 
         for (int i = 0; i < Mathf.Min(maxPassengerCount, pickupSpawnPoints.Length); i++)
@@ -30,7 +29,6 @@ public class PassengerManager : MonoBehaviour
         }
     }
 
-    // Fisher-Yates shuffle
     void ShuffleArray(Transform[] array)
     {
         for (int i = array.Length - 1; i > 0; i--)

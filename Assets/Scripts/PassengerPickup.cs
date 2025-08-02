@@ -7,21 +7,34 @@ public class PassengerPickup : MonoBehaviour
     public int rewardAmount = 50000;
 
     [Header("Passenger Appearance")]
-    public GameObject[] passengerModels; // Assign different models in inspector
+    public GameObject[] passengerModels;
     private GameObject activeModel;
-
-    [Header("Settings")]
-    public float requiredStopSpeed = 5f;
 
     private bool pickedUp = false;
 
     private void Start()
     {
-        // Spawn random visual model
         if (passengerModels != null && passengerModels.Length > 0)
         {
             int randIndex = Random.Range(0, passengerModels.Length);
             activeModel = Instantiate(passengerModels[randIndex], transform);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        var carController = other.GetComponent<Ezereal.EzerealCarController>();
+        var passengerSystem = other.GetComponent<PlayerPassengerSystem>();
+
+        if (passengerSystem != null && carController != null && passengerSystem.HasPassenger())
+        {
+            if (carController.stationary == false)
+            {
+                Debug.Log("Stop to pick up passenger!");
+                // TODO: UIManager.Instance.ShowDropoffWarning();
+            }
         }
     }
 
@@ -32,14 +45,12 @@ public class PassengerPickup : MonoBehaviour
         var passengerSystem = other.GetComponent<PlayerPassengerSystem>();
         var carController = other.GetComponent<Ezereal.EzerealCarController>();
 
-        if (passengerSystem != null && carController != null && carController.currentSpeed <= requiredStopSpeed)
+        if (passengerSystem != null && carController != null && carController.stationary == true)
         {
-            if (passengerSystem.CanPickUpPassenger()) // Only if under limit
+            if (passengerSystem.CanPickUpPassenger())
             {
-                // Send info to system
                 passengerSystem.PickUpPassenger(this);
 
-                // Cleanup visuals
                 if (activeModel != null)
                     Destroy(activeModel);
 
