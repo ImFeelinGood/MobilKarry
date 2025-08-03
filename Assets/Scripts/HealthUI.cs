@@ -9,6 +9,14 @@ public class HealthUI : MonoBehaviour
     public Slider healthSlider;
     public TMP_Text healthText;
 
+    private void Start()
+    {
+        if (GameModeManager.Instance.currentMode == GameMode.Arcade)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
     private void Update()
     {
         if (carStatus == null) return;
