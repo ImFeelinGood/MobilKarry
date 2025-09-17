@@ -66,11 +66,6 @@ public class PlayerPassengerSystem : MonoBehaviour
 
             if (drop.marker) Destroy(drop.marker);
             currentPassengers.Remove(drop);
-
-            if (GameModeManager.Instance.currentMode == GameMode.Arcade)
-            {
-                GameModeManager.Instance.AddArcadeTime(GameModeManager.Instance.timePerDropOff);
-            }
         }
 
         UpdateWaypointArrow();

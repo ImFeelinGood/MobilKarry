@@ -9,13 +9,6 @@ public class MainMenuUI : MonoBehaviour
 
     public void PlaySimulation()
     {
-        GameModeManager.Instance.SetGameMode(GameMode.Simulation);
-        SceneManager.LoadScene(gameplaySceneName);
-    }
-
-    public void PlayArcade()
-    {
-        GameModeManager.Instance.SetGameMode(GameMode.Arcade);
         SceneManager.LoadScene(gameplaySceneName);
     }
 

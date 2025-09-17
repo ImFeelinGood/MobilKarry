@@ -21,8 +21,6 @@ public class CarStatus : MonoBehaviour
 
     private void Update()
     {
-        if (GameModeManager.Instance.currentMode != GameMode.Simulation) return;
-
         float healthPercent = GetHealthPercentage();
 
         if (healthPercent <= 30f)
@@ -45,27 +43,22 @@ public class CarStatus : MonoBehaviour
 
     public void ConsumeFuel(float amount)
     {
-        if (GameModeManager.Instance.currentMode != GameMode.Simulation) return;
         currentFuel = Mathf.Max(currentFuel - amount, 0);
     }
 
     public void Repair(float amount)
     {
-        if (GameModeManager.Instance.currentMode != GameMode.Simulation) return;
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
     }
 
     public void TakeDamage(float amount)
     {
-        if (GameModeManager.Instance.currentMode != GameMode.Simulation) return;
-
         currentHealth = Mathf.Max(currentHealth - amount, 0);
         Debug.Log($"[CarStatus] Damage Taken: {amount} | Health Now: {currentHealth}");
     }
 
     public void Refuel(float amount)
     {
-        if (GameModeManager.Instance.currentMode != GameMode.Simulation) return;
         currentFuel = Mathf.Min(currentFuel + amount, maxFuel);
     }
 

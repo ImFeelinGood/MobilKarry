@@ -9,14 +9,6 @@ public class FuelUI : MonoBehaviour
     public Slider fuelSlider;
     public TMP_Text fuelPercentageText;
 
-    private void Start()
-    {
-        if (GameModeManager.Instance.currentMode == GameMode.Arcade)
-        {
-            gameObject.SetActive(false);
-        }
-    }
-
     private void Update()
     {
         if (carStatus == null) return;
