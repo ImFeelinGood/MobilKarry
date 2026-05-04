@@ -52,7 +52,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 2, z: 2}
+  m_Size: {x: 5, y: 2, z: 5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7187511722853173412
 MonoBehaviour:
@@ -68,10 +68,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dropOffWaypoint: {fileID: 0}
   rewardAmount: 50000
+  lifetime: 60
   passengerModels:
   - {fileID: 8688461497163051436, guid: 64b3f9220d625714e82c78a40a583078, type: 3}
   - {fileID: 8688461497163051436, guid: ed8e0f4667e7ada488befb8d3f8aded9, type: 3}
   - {fileID: 8688461497163051436, guid: ee67cdcbcfcfb8a47aac0ee95a601e4d, type: 3}
   - {fileID: 8688461497163051436, guid: 83f817244e03bbb4db202753a6ea93c3, type: 3}
   - {fileID: 8688461497163051436, guid: 06c7aef46228ba344be6b7c6c5ca4222, type: 3}
-  requiredStopSpeed: 5
+  manager: {fileID: 0}

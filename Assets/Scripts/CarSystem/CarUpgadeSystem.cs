@@ -23,6 +23,9 @@ public class CarUpgradeSystem : MonoBehaviour
             {
                 upgrades.engineLevel++;
                 ApplyUpgrades();
+
+                if (GameSessionManager.Instance != null)
+                    GameSessionManager.Instance.NotifyCarUpgraded();
             }
         }
     }
@@ -36,6 +39,9 @@ public class CarUpgradeSystem : MonoBehaviour
             {
                 upgrades.transmissionLevel++;
                 ApplyUpgrades();
+
+                if (GameSessionManager.Instance != null)
+                    GameSessionManager.Instance.NotifyCarUpgraded();
             }
         }
     }
@@ -50,6 +56,9 @@ public class CarUpgradeSystem : MonoBehaviour
             {
                 upgrades.brakeLevel++;
                 ApplyUpgrades();
+
+                if (GameSessionManager.Instance != null)
+                    GameSessionManager.Instance.NotifyCarUpgraded();
             }
         }
     }

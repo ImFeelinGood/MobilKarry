@@ -7,7 +7,7 @@ namespace Barmetler.RoadSystem.Traffic
     public class TrafficSpawner : MonoBehaviour
     {
         public RoadSystem roadSystem;
-        public TrafficCar carPrefab;
+        public TrafficCarOld carPrefab;
 
         public int spawnCount = 15;
 

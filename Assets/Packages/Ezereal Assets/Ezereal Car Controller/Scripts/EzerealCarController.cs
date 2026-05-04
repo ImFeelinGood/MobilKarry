@@ -7,6 +7,19 @@ namespace Ezereal
 {
     public class EzerealCarController : MonoBehaviour // This is the main system resposible for car control.
     {
+        [Header("Tutorial")]
+        public float CurrentSpeed => currentSpeed;
+        public float AccelerationInput => currentAccelerationValue;
+        public float BrakeInput => currentBrakeValue;
+        public float HandbrakeInput => currentHandbrakeValue;
+        public float SteerInput => targetSteerAngle;
+        public bool IsStarted => isStarted;
+        public AutomaticGears CurrentGear => currentGear;
+
+        [Header("Driving Mode")]
+        public bool useGearbox = false; // true = old behavior, false = new W/S direction logic
+        [SerializeField] private float directionChangeThreshold = 1f; // km/h
+
         [Header("Ezereal References")]
 
         [SerializeField] EzerealLightController ezerealLightController;
@@ -73,6 +86,16 @@ namespace Ezereal
         [SerializeField] float RearRightWheelRPM = 0f;
 
         [SerializeField] float speedFactor = 0f; // Leave at zero. Responsible for smooth acceleration and near-top-speed slowdown.
+
+        public void ToggleGearbox()
+        {
+            SetUseGearbox(!useGearbox);
+        }
+
+        public void SetUseGearbox(bool enabled)
+        {
+            useGearbox = enabled;
+        }
 
         private void Awake()
         {
@@ -167,6 +190,146 @@ namespace Ezereal
 
         }
 
+        private bool IsNearlyStopped()
+        {
+            return Mathf.Abs(currentSpeed) <= directionChangeThreshold;
+        }
+
+        private bool IsMovingForward()
+        {
+            return currentSpeed > directionChangeThreshold;
+        }
+
+        private bool IsMovingBackward()
+        {
+            return currentSpeed < -directionChangeThreshold;
+        }
+
+        private void ClearMotorTorque()
+        {
+            frontLeftWheelCollider.motorTorque = 0f;
+            frontRightWheelCollider.motorTorque = 0f;
+            rearLeftWheelCollider.motorTorque = 0f;
+            rearRightWheelCollider.motorTorque = 0f;
+        }
+
+        private void SetMotorTorque(float torque)
+        {
+            ClearMotorTorque();
+
+            switch (driveType)
+            {
+                case DriveTypes.FWD:
+                    frontLeftWheelCollider.motorTorque = torque;
+                    frontRightWheelCollider.motorTorque = torque;
+                    break;
+
+                case DriveTypes.RWD:
+                    rearLeftWheelCollider.motorTorque = torque;
+                    rearRightWheelCollider.motorTorque = torque;
+                    break;
+
+                case DriveTypes.AWD:
+                    frontLeftWheelCollider.motorTorque = torque;
+                    frontRightWheelCollider.motorTorque = torque;
+                    rearLeftWheelCollider.motorTorque = torque;
+                    rearRightWheelCollider.motorTorque = torque;
+                    break;
+            }
+        }
+
+        private void SetFootBrake(float brakeTorque)
+        {
+            // keep same style as your current brake logic: front wheels only
+            frontLeftWheelCollider.brakeTorque = brakeTorque;
+            frontRightWheelCollider.brakeTorque = brakeTorque;
+        }
+
+        private void SetBrakeLights(bool isBraking)
+        {
+            if (!isStarted || ezerealLightController == null) return;
+
+            if (isBraking) ezerealLightController.BrakeLightsOn();
+            else ezerealLightController.BrakeLightsOff();
+        }
+
+        private void SetReverseLights(bool isReversing)
+        {
+            if (!isStarted || ezerealLightController == null) return;
+
+            if (isReversing) ezerealLightController.ReverseLightsOn();
+            else ezerealLightController.ReverseLightsOff();
+        }
+
+        private void DirectionBasedDrive()
+        {
+            float forwardInput = Mathf.Clamp01(currentAccelerationValue); // W
+            float reverseInput = Mathf.Clamp01(currentBrakeValue);        // S
+
+            float motorTorque = 0f;
+            float brakeTorque = 0f;
+
+            if (IsMovingForward())
+            {
+                // Car still moving forward:
+                // S should brake first, not instantly reverse
+                if (reverseInput > 0f)
+                {
+                    brakeTorque = reverseInput * brakePower;
+                }
+                else if (forwardInput > 0f && currentSpeed < maxForwardSpeed)
+                {
+                    float speed01 = Mathf.InverseLerp(0f, maxForwardSpeed, currentSpeed);
+                    float availableTorque = Mathf.Lerp(horsePower, 0f, speed01);
+                    motorTorque = availableTorque * forwardInput;
+                }
+            }
+            else if (IsMovingBackward())
+            {
+                // Car still moving backward:
+                // W should brake first, not instantly go forward
+                if (forwardInput > 0f)
+                {
+                    brakeTorque = forwardInput * brakePower;
+                }
+                else if (reverseInput > 0f && Mathf.Abs(currentSpeed) < maxReverseSpeed)
+                {
+                    float speed01 = Mathf.InverseLerp(0f, maxReverseSpeed, Mathf.Abs(currentSpeed));
+                    float availableTorque = Mathf.Lerp(horsePower, 0f, speed01);
+                    motorTorque = -availableTorque * reverseInput;
+                }
+            }
+            else
+            {
+                // Near zero speed: direction can change
+                if (forwardInput > 0f && reverseInput <= 0f)
+                {
+                    motorTorque = horsePower * forwardInput;
+                }
+                else if (reverseInput > 0f && forwardInput <= 0f)
+                {
+                    motorTorque = -horsePower * reverseInput;
+                }
+                else if (forwardInput > 0f && reverseInput > 0f)
+                {
+                    brakeTorque = brakePower;
+                }
+            }
+
+            SetMotorTorque(motorTorque);
+            SetFootBrake(brakeTorque);
+            SetBrakeLights(brakeTorque > 0f);
+            SetReverseLights(motorTorque < 0f || IsMovingBackward());
+
+            // optional UI text
+            if (motorTorque < 0f || IsMovingBackward())
+                UpdateGearText("R");
+            else if (motorTorque > 0f || IsMovingForward())
+                UpdateGearText("D");
+            else
+                UpdateGearText("N");
+        }
+
         private void ShutdownCar()
         {
             isStarted = false;
@@ -192,7 +355,11 @@ namespace Ezereal
 
         void Acceleration()
         {
-            if (currentAccelerationValue > 0f)
+            bool hasDriveInput = useGearbox
+                ? currentAccelerationValue > 0f
+                : (currentAccelerationValue > 0f || currentBrakeValue > 0f);
+
+            if (hasDriveInput)
             {
                 if (carStatus != null)
                 {
@@ -206,124 +373,109 @@ namespace Ezereal
                 }
             }
 
-            if (isStarted)
+            if (!isStarted)
             {
-                if (currentGear == AutomaticGears.Neutral)
-                {
-                    // Neutral gear: no torque should be applied.
-                    frontLeftWheelCollider.motorTorque = 0;
-                    frontRightWheelCollider.motorTorque = 0;
-                    rearLeftWheelCollider.motorTorque = 0;
-                    rearRightWheelCollider.motorTorque = 0;
-                    return;
-                }
-
-                if (currentGear == AutomaticGears.Drive)
-                {
-                    // Calculate how close the car is to top speed
-                    // as a number from zero to one
-                    speedFactor = Mathf.InverseLerp(0, maxForwardSpeed, currentSpeed);
-
-                    // Use that to calculate how much torque is available 
-                    // (zero torque at top speed)
-                    float currentMotorTorque = Mathf.Lerp(horsePower, 0, speedFactor);
-
-                    if (currentAccelerationValue > 0f && currentSpeed < maxForwardSpeed)
-                    {
-                        if (driveType == DriveTypes.RWD)
-                        {
-                            rearLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                            rearRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                        }
-                        else if (driveType == DriveTypes.FWD)
-                        {
-                            frontLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                            frontRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                        }
-                        else if (driveType == DriveTypes.AWD)
-                        {
-                            frontLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                            frontRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                            rearLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                            rearRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
-                        }
-                    }
-                    else
-                    {
-                        frontLeftWheelCollider.motorTorque = 0;
-                        frontRightWheelCollider.motorTorque = 0;
-                        rearLeftWheelCollider.motorTorque = 0;
-                        rearRightWheelCollider.motorTorque = 0;
-                    }
-                }
-
-                if (currentGear == AutomaticGears.Reverse)
-                {
-                    if (currentAccelerationValue > 0f && currentSpeed > -maxReverseSpeed)
-                    {
-                        currentAccelerationValue = 1; //Invert Acceleration value
-
-                        if (driveType == DriveTypes.RWD)
-                        {
-                            rearLeftWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                            rearRightWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                        }
-                        else if (driveType == DriveTypes.FWD)
-                        {
-                            frontLeftWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                            frontRightWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                        }
-                        else if (driveType == DriveTypes.AWD)
-                        {
-                            frontLeftWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                            frontRightWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                            rearLeftWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                            rearRightWheelCollider.motorTorque = -currentAccelerationValue * horsePower;
-                        }
-
-                    }
-                    else
-                    {
-                        frontLeftWheelCollider.motorTorque = 0;
-                        frontRightWheelCollider.motorTorque = 0;
-                        rearLeftWheelCollider.motorTorque = 0;
-                        rearRightWheelCollider.motorTorque = 0;
-                    }
-                }
-
-                UpdateAccelerationSlider();
+                ClearMotorTorque();
+                return;
             }
+
+            if (!useGearbox)
+            {
+                DirectionBasedDrive();
+                UpdateAccelerationSlider();
+                return;
+            }
+
+            // ===== OLD GEARBOX BEHAVIOR =====
+            if (currentGear == AutomaticGears.Neutral)
+            {
+                ClearMotorTorque();
+                return;
+            }
+
+            if (currentGear == AutomaticGears.Drive)
+            {
+                speedFactor = Mathf.InverseLerp(0, maxForwardSpeed, currentSpeed);
+                float currentMotorTorque = Mathf.Lerp(horsePower, 0, speedFactor);
+
+                if (currentAccelerationValue > 0f && currentSpeed < maxForwardSpeed)
+                {
+                    if (driveType == DriveTypes.RWD)
+                    {
+                        rearLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                        rearRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                    }
+                    else if (driveType == DriveTypes.FWD)
+                    {
+                        frontLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                        frontRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                    }
+                    else if (driveType == DriveTypes.AWD)
+                    {
+                        frontLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                        frontRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                        rearLeftWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                        rearRightWheelCollider.motorTorque = currentMotorTorque * currentAccelerationValue;
+                    }
+                }
+                else
+                {
+                    ClearMotorTorque();
+                }
+            }
+
+            if (currentGear == AutomaticGears.Reverse)
+            {
+                if (currentAccelerationValue > 0f && currentSpeed > -maxReverseSpeed)
+                {
+                    float reverseInput = currentAccelerationValue;
+
+                    if (driveType == DriveTypes.RWD)
+                    {
+                        rearLeftWheelCollider.motorTorque = -reverseInput * horsePower;
+                        rearRightWheelCollider.motorTorque = -reverseInput * horsePower;
+                    }
+                    else if (driveType == DriveTypes.FWD)
+                    {
+                        frontLeftWheelCollider.motorTorque = -reverseInput * horsePower;
+                        frontRightWheelCollider.motorTorque = -reverseInput * horsePower;
+                    }
+                    else if (driveType == DriveTypes.AWD)
+                    {
+                        frontLeftWheelCollider.motorTorque = -reverseInput * horsePower;
+                        frontRightWheelCollider.motorTorque = -reverseInput * horsePower;
+                        rearLeftWheelCollider.motorTorque = -reverseInput * horsePower;
+                        rearRightWheelCollider.motorTorque = -reverseInput * horsePower;
+                    }
+                }
+                else
+                {
+                    ClearMotorTorque();
+                }
+            }
+
+            UpdateAccelerationSlider();
         }
 
         void OnBrake(InputValue brakeValue)
         {
             currentBrakeValue = brakeValue.Get<float>();
-            //Debug.Log("Brake:" + currentBrakeValue.ToString());
-
-            if (isStarted && ezerealLightController != null)
-            {
-                if (currentBrakeValue > 0)
-                {
-                    ezerealLightController.BrakeLightsOn();
-                }
-                else
-                {
-                    ezerealLightController.BrakeLightsOff();
-                }
-            }
         }
 
         void Braking()
         {
+            if (!useGearbox)
+                return; // braking is already handled inside DirectionBasedDrive()
+
             if (currentBrakeValue > 0f)
             {
-                frontLeftWheelCollider.brakeTorque = currentBrakeValue * brakePower;
-                frontRightWheelCollider.brakeTorque = currentBrakeValue * brakePower;
+                SetFootBrake(currentBrakeValue * brakePower);
+                SetBrakeLights(true);
             }
             else
             {
-                frontLeftWheelCollider.brakeTorque = 0;
-                frontRightWheelCollider.brakeTorque = 0;
+                SetFootBrake(0f);
+                SetBrakeLights(false);
             }
         }
 
@@ -415,19 +567,18 @@ namespace Ezereal
 
         void OnDownShift()
         {
+            if (!useGearbox) return;
+
             switch (currentGear)
             {
                 case AutomaticGears.Reverse:
-                    //Debug.Log("Reverse, can't go any lower");
                     break;
 
                 case AutomaticGears.Neutral:
                     currentGear--;
                     UpdateGearText("R");
                     if (isStarted && ezerealLightController != null)
-                    {
                         ezerealLightController.ReverseLightsOn();
-                    }
                     break;
 
                 case AutomaticGears.Drive:
@@ -439,29 +590,26 @@ namespace Ezereal
 
         void OnUpShift()
         {
+            if (!useGearbox) return;
+
             switch (currentGear)
             {
                 case AutomaticGears.Reverse:
                     currentGear++;
                     UpdateGearText("N");
-
                     if (isStarted && ezerealLightController != null)
-                    {
                         ezerealLightController.ReverseLightsOff();
-                    }
-
                     break;
+
                 case AutomaticGears.Neutral:
                     currentGear++;
                     UpdateGearText("D");
                     break;
+
                 case AutomaticGears.Drive:
-                    //Debug.Log("Drive, can't go any higher");
                     break;
             }
         }
-
-
 
         private void FixedUpdate()
         {
@@ -548,6 +696,19 @@ namespace Ezereal
 
         void UpdateAccelerationSlider()
         {
+            if (!useGearbox)
+            {
+                float targetValue = 0f;
+
+                if (IsMovingBackward() || (IsNearlyStopped() && currentBrakeValue > 0f && currentAccelerationValue == 0f))
+                    targetValue = currentBrakeValue;
+                else
+                    targetValue = currentAccelerationValue;
+
+                accelerationSlider.value = Mathf.Lerp(accelerationSlider.value, targetValue, Time.deltaTime * 15f);
+                return;
+            }
+
             if (currentGear == AutomaticGears.Drive || currentGear == AutomaticGears.Reverse)
             {
                 accelerationSlider.value = Mathf.Lerp(accelerationSlider.value, currentAccelerationValue, Time.deltaTime * 15f);

@@ -5,13 +5,15 @@ using TMPro;
 public class PlayerPassengerSystem : MonoBehaviour
 {
     public WaypointArrow waypointArrow;
-
     public TMP_Text passengerCountText;
-
     public int maxPassengers = 8;
 
     [SerializeField] private List<PassengerData> currentPassengers = new List<PassengerData>();
     public GameObject dropOffMarkerPrefab;
+
+    [Header("Stats")]
+    [SerializeField] private int completedTrips = 0;
+    public int CompletedTrips => completedTrips;
 
     [System.Serializable]
     public class PassengerData
@@ -62,6 +64,8 @@ public class PlayerPassengerSystem : MonoBehaviour
         if (drop != null)
         {
             CurrencyManager.Instance.AddRupiah(drop.reward);
+            completedTrips++;
+
             Debug.Log("Dropped off passenger, Reward: " + drop.reward);
 
             if (drop.marker) Destroy(drop.marker);
@@ -78,7 +82,7 @@ public class PlayerPassengerSystem : MonoBehaviour
         {
             if (currentPassengers.Count == 0)
             {
-                waypointArrow?.ClearTarget();
+                waypointArrow.ClearTarget();
                 return;
             }
 
@@ -96,7 +100,7 @@ public class PlayerPassengerSystem : MonoBehaviour
                 }
             }
 
-            waypointArrow?.SetTarget(closest);
+            waypointArrow.SetTarget(closest);
         }
     }
 
@@ -109,6 +113,5 @@ public class PlayerPassengerSystem : MonoBehaviour
     }
 
     public bool HasPassenger() => currentPassengers.Count > 0;
-
     public bool CanPickUpPassenger() => currentPassengers.Count < maxPassengers;
 }
