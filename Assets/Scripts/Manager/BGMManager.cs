@@ -9,11 +9,6 @@ public class BGMManager : MonoBehaviour
     public AudioSource bgmSource;
     public AudioClip bgmClip;
 
-    private void Start()
-    {
-        Application.targetFrameRate = 60;
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)

@@ -5,10 +5,53 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Ezereal;
 
+public enum SessionPlayMode
+{
+    TaskMode,
+    FreeMode
+}
+
+public static class SessionModeData
+{
+    public static SessionPlayMode CurrentMode { get; private set; } = SessionPlayMode.TaskMode;
+    public static bool IsFreeMode => CurrentMode == SessionPlayMode.FreeMode;
+
+    public static void SetTaskMode()
+    {
+        CurrentMode = SessionPlayMode.TaskMode;
+    }
+
+    public static void SetFreeMode()
+    {
+        CurrentMode = SessionPlayMode.FreeMode;
+    }
+}
+
 public class GameSessionManager : MonoBehaviour
 {
     public static GameSessionManager Instance;
+
+    [Header("Mode Settings")]
+    [Tooltip("If true, the scene uses the mode selected from MainMenuUI. If false, it uses Editor Default Mode below.")]
+    [SerializeField] private bool useMenuSelectedMode = true;
+
+    [Tooltip("Used only when Use Menu Selected Mode is false. Useful when testing the Gameplay scene directly.")]
+    [SerializeField] private SessionPlayMode editorDefaultMode = SessionPlayMode.TaskMode;
+
+    [Tooltip("Hide the timer text while playing Free Mode.")]
+    [SerializeField] private bool hideTimerUIInFreeMode = true;
+
+    [Tooltip("Hide the goal/task text while playing Free Mode.")]
+    [SerializeField] private bool hideGoalUIInFreeMode = true;
+
+    [Tooltip("Disable CameraUsageUI so camera usage is not tracked in Free Mode.")]
+    [SerializeField] private bool disableCameraUsageTrackingInFreeMode = true;
+
+    [Tooltip("Disable passenger/task system in Free Mode.")]
+    [SerializeField] private bool disablePassengerSystemInFreeMode = true;
+
     private bool stopTracking = false;
+    private SessionPlayMode currentMode = SessionPlayMode.TaskMode;
 
     [Header("Result Settings")]
     [SerializeField] private string resultName;
@@ -50,8 +93,10 @@ public class GameSessionManager : MonoBehaviour
     private int upgradeCount = 0;
     private SessionResultData lastResult;
 
+    public bool IsFreeMode => currentMode == SessionPlayMode.FreeMode;
+    public bool IsTaskMode => currentMode == SessionPlayMode.TaskMode;
     public float ElapsedTime => elapsedTime;
-    public float RemainingTime => Mathf.Max(0f, levelDurationSeconds - elapsedTime);
+    public float RemainingTime => IsFreeMode ? 0f : Mathf.Max(0f, levelDurationSeconds - elapsedTime);
     public bool HasUpgradedCar => hasUpgradedCar;
     public int UpgradeCount => upgradeCount;
 
@@ -64,21 +109,25 @@ public class GameSessionManager : MonoBehaviour
         }
 
         Instance = this;
+        currentMode = useMenuSelectedMode ? SessionModeData.CurrentMode : editorDefaultMode;
     }
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
         if (finishPanel != null)
             finishPanel.SetActive(false);
 
         Time.timeScale = 1f;
-        UpdateUI();
+
+        if (IsFreeMode)
+            StartFreeMode();
+        else
+            StartTaskMode();
     }
 
     private void Update()
     {
-        if (sessionEnded || stopTracking) return;
+        if (sessionEnded || stopTracking || IsFreeMode) return;
 
         elapsedTime += Time.deltaTime;
         UpdateUI();
@@ -98,8 +147,47 @@ public class GameSessionManager : MonoBehaviour
         }
     }
 
+    private void StartTaskMode()
+    {
+        stopTracking = false;
+        sessionEnded = false;
+        elapsedTime = 0f;
+        UpdateUI();
+    }
+
+    private void StartFreeMode()
+    {
+        stopTracking = true;
+        sessionEnded = false;
+        elapsedTime = 0f;
+
+        if (timerText != null)
+        {
+            if (hideTimerUIInFreeMode)
+                timerText.gameObject.SetActive(false);
+            else
+                timerText.text = "Free Mode";
+        }
+
+        if (goalText != null)
+        {
+            if (hideGoalUIInFreeMode)
+                goalText.gameObject.SetActive(false);
+            else
+                goalText.text = "Free Mode\nNo time limit\nNo task";
+        }
+
+        if (disableCameraUsageTrackingInFreeMode)
+            SetBehaviourEnabled(cameraUsageUI, false);
+
+        if (disablePassengerSystemInFreeMode)
+            SetBehaviourEnabled(passengerSystem, false);
+    }
+
     private void UpdateUI()
     {
+        if (IsFreeMode) return;
+
         if (timerText != null)
             timerText.text = $"Time: {FormatTime(RemainingTime)}";
 
@@ -117,7 +205,7 @@ public class GameSessionManager : MonoBehaviour
 
     public void NotifyCarUpgraded()
     {
-        if (sessionEnded) return;
+        if (sessionEnded || IsFreeMode) return;
 
         upgradeCount++;
         hasUpgradedCar = true;
@@ -126,7 +214,9 @@ public class GameSessionManager : MonoBehaviour
 
     public void EndSession(string endReason)
     {
-        if (sessionEnded) return;
+        // Free Mode should never finish automatically and should never export results.
+        if (sessionEnded || IsFreeMode) return;
+
         sessionEnded = true;
 
         lastResult = BuildResult(endReason);
@@ -237,11 +327,14 @@ public class GameSessionManager : MonoBehaviour
 
     private void ExportResultToCsv(SessionResultData result)
     {
+        if (IsFreeMode) return;
+
         string folder = Path.Combine(Application.persistentDataPath, "Results");
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-        string filePath = Path.Combine(folder, $"{resultName}.csv");
+        string safeResultName = MakeSafeFileName(resultName);
+        string filePath = Path.Combine(folder, $"{safeResultName}.csv");
 
         const string header =
             "PlayerName,DateTime,EndReason,ElapsedTimeSeconds,ElapsedTimeFormatted,CollectedCurrency,CompletedTrips,CrashCount,CloseFreeCamera,FarFreeCamera,WheelCamera,CockpitCamera,LockedCamera,TopDownCamera";
@@ -297,7 +390,14 @@ public class GameSessionManager : MonoBehaviour
         }
     }
 
-    //C:/Users/dheda/AppData/LocalLow/DefaultCompany/MobilKarry\Results\
+    private static void SetBehaviourEnabled(UnityEngine.Object target, bool enabled)
+    {
+        Behaviour behaviour = target as Behaviour;
+        if (behaviour != null)
+            behaviour.enabled = enabled;
+    }
+
+    // C:/Users/dheda/AppData/LocalLow/DefaultCompany/MobilKarry/Results/
 
     private static string GetFirstCsvField(string line)
     {
@@ -332,7 +432,7 @@ public class GameSessionManager : MonoBehaviour
         foreach (char c in Path.GetInvalidFileNameChars())
             fileName = fileName.Replace(c.ToString(), "_");
 
-        return string.IsNullOrWhiteSpace(fileName) ? "Player" : fileName;
+        return string.IsNullOrWhiteSpace(fileName) ? "SessionResult" : fileName;
     }
 
     private static string FormatTime(float seconds)

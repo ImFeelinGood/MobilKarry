@@ -12,19 +12,20 @@ public class MainMenuUI : MonoBehaviour
     [Header("Player Input")]
     [SerializeField] private TMP_InputField playerNameInput;
     [SerializeField] private Button playButton;
+    [SerializeField] private Button freeModeButton;
 
     private void Start()
     {
-        // button disabled at start
         UpdatePlayButtonState();
 
-        // listen when input changes
-        playerNameInput.onValueChanged.AddListener(OnNameChanged);
+        if (playerNameInput != null)
+            playerNameInput.onValueChanged.AddListener(OnNameChanged);
     }
 
     private void OnDestroy()
     {
-        playerNameInput.onValueChanged.RemoveListener(OnNameChanged);
+        if (playerNameInput != null)
+            playerNameInput.onValueChanged.RemoveListener(OnNameChanged);
     }
 
     private void OnNameChanged(string value)
@@ -34,19 +35,37 @@ public class MainMenuUI : MonoBehaviour
 
     public void PlaySimulation()
     {
-        string playerName = "Player";
-
-        if (playerNameInput != null && !string.IsNullOrWhiteSpace(playerNameInput.text))
-            playerName = playerNameInput.text.Trim();
-
-        SessionPlayerData.SetPlayerName(playerName);
+        SessionModeData.SetTaskMode();
+        SessionPlayerData.SetPlayerName(GetPlayerName("Player"));
         SceneManager.LoadScene(gameplaySceneName);
+    }
+
+    public void PlayFreeMode()
+    {
+        SessionModeData.SetFreeMode();
+        SessionPlayerData.SetPlayerName(GetPlayerName("Free Player"));
+        SceneManager.LoadScene(gameplaySceneName);
+    }
+
+    private string GetPlayerName(string fallbackName)
+    {
+        if (playerNameInput != null && !string.IsNullOrWhiteSpace(playerNameInput.text))
+            return playerNameInput.text.Trim();
+
+        return fallbackName;
     }
 
     private void UpdatePlayButtonState()
     {
-        bool hasText = !string.IsNullOrWhiteSpace(playerNameInput.text);
-        playButton.interactable = hasText;
+        bool hasText = playerNameInput != null && !string.IsNullOrWhiteSpace(playerNameInput.text);
+
+        // Normal task mode needs a name because it records result data.
+        if (playButton != null)
+            playButton.interactable = hasText;
+
+        // Free Mode does not record results, so the name can be optional.
+        if (freeModeButton != null)
+            freeModeButton.interactable = true;
     }
 
     public void QuitGame()
