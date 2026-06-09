@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5644094614429437348}
   - component: {fileID: 1142053258703626661}
   - component: {fileID: 2290388829646129393}
+  - component: {fileID: 1508290440579184439}
   m_Layer: 0
   m_Name: Passenger 2
   m_TagString: Untagged
@@ -87,6 +88,21 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1508290440579184439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8688461497163051436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c93dfa05766bf24d91a40ce92beb723, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  rotationSpeed: 5
+  lockVerticalRotation: 1
 --- !u!1001 &5923573650177725295
 PrefabInstance:
   m_ObjectHideFlags: 0

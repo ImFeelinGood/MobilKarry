@@ -66,6 +66,13 @@ namespace Ezereal
         public float decelerationSpeed = 0.5f; // 0.5f default
         public float maxSteeringWheelRotation = 100f; // 360 for real steering wheel. 120 would be more suitable for racing.
 
+        [Header("Manual Upright")]
+        [SerializeField] private Key uprightKey = Key.R;
+        [SerializeField] private float manualUprightLiftHeight = 0.75f;
+        [SerializeField] private bool resetVelocityWhenManualUpright = true;
+
+        private bool manualUprightRequested = false;
+
         [Header("Drive Type")]
         public DriveTypes driveType = DriveTypes.RWD;
 
@@ -95,6 +102,17 @@ namespace Ezereal
         public void SetUseGearbox(bool enabled)
         {
             useGearbox = enabled;
+        }
+
+        private void Update()
+        {
+            if (Keyboard.current == null)
+                return;
+
+            if (Keyboard.current[uprightKey].wasPressedThisFrame)
+            {
+                manualUprightRequested = true;
+            }
         }
 
         private void Awake()
@@ -613,6 +631,12 @@ namespace Ezereal
 
         private void FixedUpdate()
         {
+            if (manualUprightRequested)
+            {
+                manualUprightRequested = false;
+                Upright();
+            }
+
             Acceleration();
 
             Braking();
@@ -729,6 +753,41 @@ namespace Ezereal
                 }
             }
             return true;
+        }
+
+        private void Upright()
+        {
+            if (vehicleRB == null)
+                return;
+
+            ClearMotorTorque();
+
+            frontLeftWheelCollider.brakeTorque = 0f;
+            frontRightWheelCollider.brakeTorque = 0f;
+            rearLeftWheelCollider.brakeTorque = 0f;
+            rearRightWheelCollider.brakeTorque = 0f;
+
+            if (resetVelocityWhenManualUpright)
+            {
+#if UNITY_6000_0_OR_NEWER
+                vehicleRB.linearVelocity = Vector3.zero;
+#else
+        vehicleRB.velocity = Vector3.zero;
+#endif
+
+                vehicleRB.angularVelocity = Vector3.zero;
+            }
+
+            Quaternion uprightRotation = Quaternion.Euler(
+                0f,
+                vehicleRB.rotation.eulerAngles.y,
+                0f
+            );
+
+            Vector3 liftedPosition = vehicleRB.position + Vector3.up * manualUprightLiftHeight;
+
+            vehicleRB.MovePosition(liftedPosition);
+            vehicleRB.MoveRotation(uprightRotation);
         }
     }
 }

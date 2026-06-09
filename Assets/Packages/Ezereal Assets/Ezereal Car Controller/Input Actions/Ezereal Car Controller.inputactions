@@ -393,17 +393,6 @@
                 },
                 {
                     "name": "",
-                    "id": "568a48ee-65ec-491d-9788-dc4599d070a3",
-                    "path": "<Keyboard>/r",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Restart",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "376077f2-5949-4c1c-86b9-5d6828758470",
                     "path": "<Keyboard>/q",
                     "interactions": "",
